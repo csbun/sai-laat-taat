@@ -1,15 +1,7 @@
-function classCase(str: string) {
-  return str.replace(
-    /\w\S*/g,
-    function(txt) {
-      const s = txt.trim();
-      return s.charAt(0).toUpperCase() + s.substr(1).toLowerCase();
-    }
-  );
-}
+const ELEMENT_PROP_MICRO_APP = 'slt-micro-app';
+const ATTR_MICRO_APP_NAME = 'data-slt-micro-app-name';
 
-
-export default class App {
+export default class MicroApp {
   name: string;
   entry: string;
   isLoaded: boolean;
@@ -60,9 +52,17 @@ export default class App {
   }
 
   async mount(element: HTMLElement): Promise<any> {
-    return this.unmount()
-      .then(() => this._loadAndCallFunctionToElement(this.mountFunctionName, element))
-      .then(() => this._element = element);
+    if (!element) {
+      throw new Error(`element is required for micro-app "${this.name}"`);
+    }
+    // unmount existing micro-app on element
+    if (element[ELEMENT_PROP_MICRO_APP] && element[ELEMENT_PROP_MICRO_APP] instanceof MicroApp) {
+      await element[ELEMENT_PROP_MICRO_APP].unmount();
+    }
+    // call mount function
+    await this._loadAndCallFunctionToElement(this.mountFunctionName, element);
+    // link micro-app to element
+    element[ELEMENT_PROP_MICRO_APP] = this;
   }
 
   async unmount(): Promise<any> {

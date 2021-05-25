@@ -1,18 +1,47 @@
-import App from './app';
+import MicroApp from './micro-app';
 
-const cachedApp: { [key: string]: App } = {};
+const cachedMicroApp: { [key: string]: MicroApp } = {};
 
-export function registerApp(name: string, entry: string, preload = false) {
-  if (name && entry && !cachedApp[name]) {
-    cachedApp[name] = new App(name, entry);
+/**
+ * Register micro-app
+ * @param name micro-app name
+ * @param entry micro-app entry js url
+ * @param preload load micro-app once registered
+ * @return micro-app
+ */
+export function registerApp(name: string, entry: string, preload = false): MicroApp {
+  if (name && entry && !cachedMicroApp[name]) {
+    cachedMicroApp[name] = new MicroApp(name, entry);
     if (preload) {
-      cachedApp[name].load();
+      cachedMicroApp[name].load();
     }
   }
+  return cachedMicroApp[name];
 }
 
-export function mount(element: HTMLElement, name: string): Promise<any> {
-  if (cachedApp[name]) {
-    return cachedApp[name].mount(element);
+/**
+ * Mount micro-app to HTML Element
+ * @param name registered micro-app name
+ * @param element target element
+ */
+export function mount(name: string, element: HTMLElement): Promise<any> {
+  if (cachedMicroApp[name]) {
+    return cachedMicroApp[name].mount(element);
+  } else {
+    return Promise.reject(new Error(`micro-app "${name}" not registered`));
   }
 }
+
+/**
+ * Unmount micro-app from HTML Element
+ * @param name registered micro-app name
+ * @param element target element
+ */
+export function unmount(name: string, element: HTMLElement): Promise<any> {
+  if (cachedMicroApp[name]) {
+    return cachedMicroApp[name].unmount();
+  } else {
+    return Promise.reject(new Error(`micro-app "${name}" not registered`));
+  }
+}
+
